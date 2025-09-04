@@ -1,8 +1,14 @@
 import { type NextRequest } from 'next/server'
-import { updateSession } from '@/lib/supabase/middleware'
+import { updateSession } from '@/lib/supabase/middleware';
+import { csrfProtection } from '@/lib/csrf';
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  // Check CSRF token for non-GET requests
+  const csrfResult = await csrfProtection(request);
+  if (csrfResult) return csrfResult;
+
+  // Update Supabase session
+  return await updateSession(request);
 }
 
 export const config = {

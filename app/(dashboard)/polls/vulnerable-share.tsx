@@ -40,13 +40,27 @@ export default function VulnerableShare({
     }
   };
 
+  const sanitizeText = (text: string): string => {
+    return text
+      .replace(/[<>]/g, '') // Remove HTML tags
+      .replace(/[\"\\'\`]/g, '') // Remove quotes
+      .trim();
+  };
+
   const shareOnTwitter = () => {
-    const text = encodeURIComponent(`Check out this poll: ${pollTitle}`);
+    const sanitizedTitle = sanitizeText(pollTitle);
+    const text = encodeURIComponent(`Check out this poll: ${sanitizedTitle}`);
     const url = encodeURIComponent(shareUrl);
-    window.open(
+    
+    // Open in new window with security attributes
+    const newWindow = window.open(
       `https://twitter.com/intent/tweet?text=${text}&url=${url}`,
       "_blank",
+      "noopener,noreferrer"
     );
+    
+    // Ensure window.opener is null
+    if (newWindow) newWindow.opener = null;
   };
 
   const shareOnFacebook = () => {

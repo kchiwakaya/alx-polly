@@ -2,9 +2,15 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { LoginFormData, RegisterFormData } from '../types';
+import { isRateLimited, validatePassword } from '../utils';
 
 export async function login(data: LoginFormData) {
   const supabase = await createClient();
+
+  // Check rate limiting
+  if (isRateLimited(data.email)) {
+    return { error: 'Too many login attempts. Please try again later.' };
+  }
 
   const { error } = await supabase.auth.signInWithPassword({
     email: data.email,
@@ -21,6 +27,12 @@ export async function login(data: LoginFormData) {
 
 export async function register(data: RegisterFormData) {
   const supabase = await createClient();
+
+  // Validate password
+  const passwordValidation = validatePassword(data.password);
+  if (!passwordValidation.isValid) {
+    return { error: passwordValidation.error };
+  }
 
   const { error } = await supabase.auth.signUp({
     email: data.email,
