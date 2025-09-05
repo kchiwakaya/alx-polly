@@ -12,23 +12,59 @@ import {
 import { deletePoll } from "@/app/lib/actions/poll-actions";
 import { createClient } from "@/lib/supabase/client";
 
+/**
+ * Poll Interface
+ * 
+ * @description Represents the structure of a poll object as retrieved from the database
+ * 
+ * @interface Poll
+ */
 interface Poll {
+  /** Unique identifier for the poll */
   id: string;
+  /** The poll question text */
   question: string;
+  /** Identifier of the user who created the poll */
   user_id: string;
+  /** Timestamp when the poll was created */
   created_at: string;
+  /** Array of poll options/choices */
   options: string[];
 }
 
+
+
+/**
+ * AdminPage Component
+ * 
+ * @description An administrative interface that displays all polls in the system and allows administrators
+ * to manage them. This component fetches all polls from the database and provides functionality
+ * to view poll details and delete polls.
+ * 
+ * @returns {JSX.Element} The rendered admin panel with a list of all polls
+ */
 export default function AdminPage() {
+  /** State to store the list of all polls */
   const [polls, setPolls] = useState<Poll[]>([]);
+  /** State to track if polls are currently being loaded */
   const [loading, setLoading] = useState(true);
+  /** State to track which poll is currently being deleted (stores poll ID or null) */
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 
   useEffect(() => {
     fetchAllPolls();
   }, []);
 
+  /**
+   * Fetches all polls from the database
+   * 
+   * @description Retrieves all polls from the Supabase database, orders them by creation date
+   * in descending order, and updates the component state with the fetched data.
+   * 
+   * @async
+   * @function fetchAllPolls
+   * @returns {Promise<void>}
+   */
   const fetchAllPolls = async () => {
     const supabase = createClient();
 
@@ -43,6 +79,18 @@ export default function AdminPage() {
     setLoading(false);
   };
 
+  /**
+   * Handles the deletion of a poll
+   * 
+   * @description Sets the loading state for the specific poll being deleted,
+   * calls the deletePoll action, and updates the local state by removing the deleted poll
+   * if the operation was successful.
+   * 
+   * @async
+   * @function handleDelete
+   * @param {string} pollId - The unique identifier of the poll to be deleted
+   * @returns {Promise<void>}
+   */
   const handleDelete = async (pollId: string) => {
     setDeleteLoading(pollId);
     const result = await deletePoll(pollId);
